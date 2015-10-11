@@ -13,7 +13,7 @@ added to the route table.
 Why? Because I want to add routes without restarting the network service.
 
 I'm calling this via puppet, when I change a route- file, on a KVM hypervisor
-that has 6 physical interfaces that are each bonded, and each has a few sub
+that has 6 physical interfaces that are each bonded, and each bond has a few sub
 interfaces for vlans. Basically doing a service network restart is disruptive
 and I don't want to do it just because I'm adding a few routes.
 
