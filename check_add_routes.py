@@ -123,12 +123,7 @@ def check_update_routes(route_dir):
             file_array = read_file(file_name)
             for route in file_array:
                 match = False
-                if 'default' in route:
-                    cmd = "route change"
-                    cmd_post = ""
-                else:
-                    cmd = "route add"
-                    cmd_post = "dev %s" % (interface)
+                cmd, cmd_post = check_route(route, default_route, interface)
                 for new_route in route_table:
                     log.debug("r:%s o:%s" % (route, new_route))
                     if route in new_route:
@@ -144,20 +139,41 @@ def check_update_routes(route_dir):
         sys.exit(1)
 
 
+def check_route(route, default_route, interface):
+    if 'default' in route:
+        if default_route == []:
+            cmd = "route add"
+        else:
+            cmd = "route change"
+        cmd_post = ""
+    else:
+        cmd = "route add"
+        cmd_post = "dev %s" % (interface)
+    return cmd, cmd_post
+
+
 def update_route(cmd):
     """
     updates route using global ip_cmd, will print result if debug = True
     """
     new_cmd = "%s %s" % (ip_cmd, cmd)
+    cmd_array = new_cmd.split(" ")
+    if cmd_array[-1] == '':
+        cmd_array = cmd_array[:-1]
     if debug:
-        log.debug("new_cmd: %s" % new_cmd)
+        log.debug("new_cmd: %s cmd_array:%s" % (new_cmd, cmd_array))
         log.debug("not running :%s because debug = True" % new_cmd)
     else:
-        p = subprocess.Popen(new_cmd.split(" "), stdout=subprocess.PIPE,
+        p = subprocess.Popen(cmd_array, stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT)
         p.wait()
         if p.returncode != 0:
             log.critical("failed to update route '%s'" % new_cmd)
+            print "failed to update route! exit code was %s on cmd %s" % (
+                p.returncode, new_cmd)
+            for line in p.stdout:
+                print line
+            sys.exit(1)
         print "added route '%s'" % new_cmd
         log.debug("added route '%s'" % new_cmd)
 
