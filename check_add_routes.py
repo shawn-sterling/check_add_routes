@@ -82,6 +82,7 @@ def read_route_table():
         print "Couldn't read route table, terminating."
         sys.exit(2)
     route_table = []
+    default = []
     for route in p.stdout:
         route = re.sub('\s+', ' ', route).strip()
         route_table.append(route)
